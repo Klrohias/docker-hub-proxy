@@ -1,0 +1,17 @@
+name: Docker Image CI
+
+on: 
+  push:
+    tags: [ 'v*.*.*' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag "${{ secrets.DOCKER_IMAGE_NAME }}:${{ github.ref_name }}"
+    - name: Push Docker image
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GITHUB_USERNAME }}" --password-stdin
+        docker push "${{ secrets.DOCKER_IMAGE_NAME }}:latest"
