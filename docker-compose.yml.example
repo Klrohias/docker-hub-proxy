@@ -1,0 +1,9 @@
+version: '3'
+services:
+  web:
+    ports:
+      - "11451:43213"
+    environment:
+      DHPROXY_UPSTREAM: <PROXY_SERVER_URL>
+      DHPROXY_ROOT: <WEB_ROOT>
+    image: <DHPROXY_IMAGE>
