@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 services:
   web:
     ports:
@@ -6,4 +6,4 @@ services:
     environment:
       DHPROXY_UPSTREAM: <PROXY_SERVER_URL>
       DHPROXY_ROOT: <WEB_ROOT>
-    image: <DHPROXY_IMAGE>
+    image: ghcr.io/klrohias/docker-hub-proxy:latest

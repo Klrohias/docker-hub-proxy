@@ -1,10 +1,10 @@
-import { DOCKER_HUB_REGISTRY, SERVER_URL, PROXY_URL, DOCKER_HUB_AUTH, DOCKER_REGISTRY_SERVICE } from './config.js';
-import { defaultProxiedHeadersFrom, reversedProxy } from './proxy.js';
+import { DOCKER_HUB_REGISTRY, SERVER_URL, PROXY_URL, DOCKER_HUB_AUTH, DOCKER_REGISTRY_SERVICE } from '@/config';
+import { forwardedHeaders, reversedProxy } from '@/proxy';
 import { socksDispatcher } from 'fetch-socks';
 import * as url from 'node:url';
 import express from 'express';
 import { ProxyAgent } from 'undici';
-import { reportException } from './utils.js';
+import { reportException } from '@/utils';
 
 function makeProxyDispatcher(url) {
     const proxyUrl = new URL(url);
@@ -15,7 +15,7 @@ function makeProxyDispatcher(url) {
 
     if (proxyUrl.protocol == 'socks:' || proxyUrl.protocol == 'socks5:' || proxyUrl.protocol == 'socks4:') {
         return socksDispatcher({
-            type: proxyUrl.protocol == 'socks4' ? 4 : 5,
+            type: proxyUrl.protocol == 'socks4:' ? 4 : 5,
             host: proxyUrl.hostname,
             port: Number.parseInt(proxyUrl.port),
 
@@ -43,7 +43,7 @@ router.get('/auth/token', async (req, res) => {
             targetUrl: `${DOCKER_HUB_AUTH}?${queryString}`,
             requestHeaders: {
                 ...req.headers,
-                ...defaultProxiedHeadersFrom(req)
+                ...forwardedHeaders(req)
             },
             requestRewriteHeaders: {
                 'host': dockerAuthHostname
@@ -65,7 +65,7 @@ router.use(async (req, res) => {
             targetUrl: url,
             requestHeaders: {
                 ...req.headers,
-                ...defaultProxiedHeadersFrom(req)
+                ...forwardedHeaders(req)
             },
             requestRewriteHeaders: {
                 'host': dockerRegistryHostname
