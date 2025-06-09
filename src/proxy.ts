@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
 import { type ReadableStream } from 'node:stream/web'
+import { DEVELOPMENT } from '@/config';
 
 type HeaderValue = string[] | string;
 
@@ -48,10 +49,27 @@ export async function reversedProxy(
         fetchOptions?: any;
     }) {
     const outgoingHeaders = proxyMakeHeaders(requestHeaders, requestRewriteHeaders);
+    
+    if (DEVELOPMENT) {
+        console.log('[DEVELOPMENT] Request headers:', outgoingHeaders);
+    }
+    
     const response = await fetch(targetUrl, { ...fetchOptions, headers: outgoingHeaders });
     const responseHeaders = Object.fromEntries(response.headers);
     const ingoingHeaders = proxyMakeHeaders(responseHeaders, responseRewriteHeaders);
-
+    
+    if (DEVELOPMENT) {
+        console.log('[DEVELOPMENT] Response headers: ', ingoingHeaders);
+    }
+    
     output.writeHead(response.status, ingoingHeaders);
+    
+    if (DEVELOPMENT.includes && DEVELOPMENT.includes(ingoingHeaders['content-type'])) {
+        const text = await response.text();
+        console.log('[DEVELOPMENT] Response text:', text);
+        output.end(text);
+        return;
+    }
+    
     Readable.fromWeb(response.body as ReadableStream).pipe(output);
 }
