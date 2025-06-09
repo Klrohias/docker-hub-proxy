@@ -6,5 +6,12 @@ const app = express();
 
 app.use(dockerHubRouters);
 
-app.listen(PORT);
+const server = app.listen(PORT);
+
+function shutdown() {
+    server.close();
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
